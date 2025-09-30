@@ -9,18 +9,12 @@ public abstract class ShellCommandExecutor {
      *
      * @param command Command string (e.g., "ls -la | grep txt")
      * @param workingDirectory Working directory, or null to use the current directory
-     * @return Output and exit code
+     * @return exit code
      */
-    public abstract suspend fun execute(command: String, workingDirectory: String?): ExecutionResult
+    public abstract suspend fun execute(command: String, workingDirectory: String?): Int
 
     /**
-     * Command execution result.
-     *
-     * @property output All text printed by the command (both success and error messages)
-     * @property exitCode Process exit code (0 = success)
+     * Collect the logs of the last command having been executed.
      */
-    public data class ExecutionResult(
-        val output: String,
-        val exitCode: Int
-    )
+    public abstract suspend fun collectLogs(): String
 }

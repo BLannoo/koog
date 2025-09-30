@@ -361,6 +361,7 @@ class JvmShellCommandToolTest {
 
         val expected = """
             Command: sleep 10
+            
             Command timed out after 1 seconds
         """.trimIndent()
 
@@ -375,6 +376,22 @@ class JvmShellCommandToolTest {
 
         val expected = """
             Command: timeout /t 10 /nobreak
+            
+            Command timed out after 1 seconds
+        """.trimIndent()
+
+        assertEquals(expected, result.textForLLM())
+        assertNull(result.exitCode)
+    }
+
+    @Test
+    @EnabledOnOs(OS.LINUX, OS.MAC)
+    fun `long running command times out, but logs still available`() = runBlocking {
+        val result = execute("echo 'Hello' && sleep 10", timeoutSeconds = 1)
+        val expected = """
+            Command: echo 'Hello' && sleep 10
+            Hello
+            
             Command timed out after 1 seconds
         """.trimIndent()
 

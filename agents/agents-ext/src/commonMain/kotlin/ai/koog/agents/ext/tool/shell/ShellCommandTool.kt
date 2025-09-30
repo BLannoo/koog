@@ -103,16 +103,17 @@ public class ExecuteShellCommandTool(
     ) {
         is ShellCommandConfirmation.Approved -> runCatching {
             withTimeout(args.timeoutSeconds.seconds) {
-                val result = executor.execute(args.command, args.workingDirectory)
-                Result(args.command, result.exitCode, result.output)
+                val exitCode = executor.execute(args.command, args.workingDirectory)
+                val logs = executor.collectLogs()
+                Result(args.command, exitCode, logs)
             }
         }.getOrElse { e ->
             when (e) {
                 is TimeoutCancellationException ->
-                    Result(args.command, null, "Command timed out after ${args.timeoutSeconds} seconds")
+                    Result(args.command, null, "${executor.collectLogs()}\nCommand timed out after ${args.timeoutSeconds} seconds")
 
                 else ->
-                    Result(args.command, null, "Failed to execute command: ${e.message}")
+                    Result(args.command, null, "${executor.collectLogs()}\nFailed to execute command: ${e.message}")
             }
         }
 
