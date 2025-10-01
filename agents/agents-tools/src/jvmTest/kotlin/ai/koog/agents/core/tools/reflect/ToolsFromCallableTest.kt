@@ -83,6 +83,9 @@ interface ToolSet1 : ToolSet1BaseInterface, ToolSet {
         @LLMDescription("int argument overridden")
         intArg: Int
     ): String
+
+    @Tool("customName")
+    fun toolWithCustomName(): String
 }
 
 open class ToolSet1Impl : ToolSet1 {
@@ -116,6 +119,10 @@ open class ToolSet1Impl : ToolSet1 {
 
     override fun toolBase2OverriddenInInterface(intArg: Int): String {
         return "toolBase2OverriddenInInterface called: $intArg"
+    }
+
+    override fun toolWithCustomName(): String {
+        return "toolWithCustomName called"
     }
 }
 
@@ -280,6 +287,7 @@ class ToolsFromCallableTest {
 #2: ToolDescriptor(name=tool4, description=Perfect tool 4, requiredParameters=[ToolParameterDescriptor(name=arg, description=int argument, type=Integer)], optionalParameters=[])
 #3: ToolDescriptor(name=toolBase1, description=Base tool 1, requiredParameters=[], optionalParameters=[])
 #4: ToolDescriptor(name=toolBase2OverriddenInInterface, description=Base tool 2 description overridden, requiredParameters=[ToolParameterDescriptor(name=intArg, description=int argument overridden, type=Integer)], optionalParameters=[])
+#5: ToolDescriptor(name=customName, description=toolWithCustomName, requiredParameters=[], optionalParameters=[])
 """.trim()
                 ),
                 Arguments.of(
@@ -291,6 +299,7 @@ class ToolsFromCallableTest {
 #3: ToolDescriptor(name=tool4, description=Perfect tool 4, requiredParameters=[ToolParameterDescriptor(name=arg, description=int argument, type=Integer)], optionalParameters=[])
 #4: ToolDescriptor(name=toolBase1, description=Base tool 1, requiredParameters=[], optionalParameters=[])
 #5: ToolDescriptor(name=toolBase2OverriddenInInterface, description=Base tool 2 description overridden, requiredParameters=[ToolParameterDescriptor(name=intArg, description=int argument overridden, type=Integer)], optionalParameters=[])
+#6: ToolDescriptor(name=customName, description=toolWithCustomName, requiredParameters=[], optionalParameters=[])
 """.trim()
                 ),
                 Arguments.of(
@@ -299,6 +308,7 @@ class ToolsFromCallableTest {
 #0: ToolDescriptor(name=tool1, description=The best tool number 1, requiredParameters=[ToolParameterDescriptor(name=arg, description=int argument, type=Integer)], optionalParameters=[])
 #1: ToolDescriptor(name=toolBase1, description=Base tool 1, requiredParameters=[], optionalParameters=[])
 #2: ToolDescriptor(name=toolBase2OverriddenInInterface, description=Base tool 2 description overridden, requiredParameters=[ToolParameterDescriptor(name=intArg, description=int argument overridden, type=Integer)], optionalParameters=[])
+#3: ToolDescriptor(name=customName, description=toolWithCustomName, requiredParameters=[], optionalParameters=[])
 """.trim()
                 ),
             )
@@ -334,5 +344,26 @@ class ToolsFromCallableTest {
             }
         }.trim()
         assertEquals(expectedDescription, rendered)
+    }
+
+    @Test
+    fun testToolPropertiesOnClasses() {
+        val tools = ToolSet1Impl().asTools(json)
+        val rendered = buildString {
+            for ((i, tool) in tools.withIndex()) {
+                appendLine("#$i: name=${tool.name} description=${tool.description}")
+            }
+        }.trim()
+        assertEquals(
+            """
+#0: name=tool1 description=The best tool number 1
+#1: name=tool2 description=Wonderful tool number 2
+#2: name=tool4 description=Perfect tool 4
+#3: name=toolBase1 description=Base tool 1
+#4: name=toolBase2OverriddenInInterface description=Base tool 2 description overridden
+#5: name=customName description=toolWithCustomName
+            """.trim(),
+            rendered
+        )
     }
 }
