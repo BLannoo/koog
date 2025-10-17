@@ -1,7 +1,8 @@
 package ai.koog.prompt.executor.clients.anthropic.models
 
 import ai.koog.prompt.executor.clients.InternalLLMClientApi
-import ai.koog.prompt.executor.clients.serialization.AdditionalPropertiesFlatteningSerializer
+import ai.koog.prompt.executor.clients.serialization.AdditionalPropertiesSerializer
+import ai.koog.prompt.executor.clients.serialization.RemainSerialName
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -56,6 +57,8 @@ public data class AnthropicMessageRequest(
     val tools: List<AnthropicTool>? = null,
     val topK: Int? = null,
     val topP: Double? = null,
+    @RemainSerialName
+    @SerialName("additionalProperties")
     val additionalProperties: Map<String, JsonElement>? = null,
 ) {
     init {
@@ -622,4 +625,4 @@ public sealed interface AnthropicToolChoice {
 }
 
 internal object AnthropicMessageRequestSerializer :
-    AdditionalPropertiesFlatteningSerializer<AnthropicMessageRequest>(AnthropicMessageRequest.serializer())
+    AdditionalPropertiesSerializer<AnthropicMessageRequest>(AnthropicMessageRequest.serializer())
