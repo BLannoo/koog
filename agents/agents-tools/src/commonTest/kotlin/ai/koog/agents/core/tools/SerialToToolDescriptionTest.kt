@@ -34,12 +34,15 @@ class SerialToToolDescriptionTest {
     )
 
     @Serializable
+    @LLMDescription("Color value")
     enum class Color { RED, GREEN, BLUE }
 
     @Serializable
+    @LLMDescription("Singleton")
     object Singleton
 
     @Serializable
+    @LLMDescription("Holder")
     data class FreeFormHolder(
         // contextual => free-form property mapping
         @Contextual val meta: Any? = null
@@ -57,47 +60,47 @@ class SerialToToolDescriptionTest {
 
         // String
         assertValueParam(
-            descriptor = String.serializer().descriptor.asToolDescriptor("str"),
+            descriptor = String.serializer().descriptor.asToolDescriptor("str", toolDescription = "str"),
             expectedType = ToolParameterType.String
         )
 
         // Char -> String
         assertValueParam(
-            descriptor = Char.serializer().descriptor.asToolDescriptor("char"),
+            descriptor = Char.serializer().descriptor.asToolDescriptor("char", toolDescription = "char"),
             expectedType = ToolParameterType.String
         )
 
         // Boolean
         assertValueParam(
-            descriptor = Boolean.serializer().descriptor.asToolDescriptor("bool"),
+            descriptor = Boolean.serializer().descriptor.asToolDescriptor("bool", toolDescription = "bool"),
             expectedType = ToolParameterType.Boolean
         )
 
         // Integer family
         assertValueParam(
-            descriptor = Int.serializer().descriptor.asToolDescriptor("int"),
+            descriptor = Int.serializer().descriptor.asToolDescriptor("int", toolDescription = "int"),
             expectedType = ToolParameterType.Integer
         )
         assertValueParam(
-            descriptor = Long.serializer().descriptor.asToolDescriptor("long"),
+            descriptor = Long.serializer().descriptor.asToolDescriptor("long", toolDescription = "long"),
             expectedType = ToolParameterType.Integer
         )
         assertValueParam(
-            descriptor = Short.serializer().descriptor.asToolDescriptor("short"),
+            descriptor = Short.serializer().descriptor.asToolDescriptor("short", toolDescription = "short"),
             expectedType = ToolParameterType.Integer
         )
         assertValueParam(
-            descriptor = Byte.serializer().descriptor.asToolDescriptor("byte"),
+            descriptor = Byte.serializer().descriptor.asToolDescriptor("byte", toolDescription = "byte"),
             expectedType = ToolParameterType.Integer
         )
 
         // Float family
         assertValueParam(
-            descriptor = Float.serializer().descriptor.asToolDescriptor("float"),
+            descriptor = Float.serializer().descriptor.asToolDescriptor("float", toolDescription = "float"),
             expectedType = ToolParameterType.Float
         )
         assertValueParam(
-            descriptor = Double.serializer().descriptor.asToolDescriptor("double"),
+            descriptor = Double.serializer().descriptor.asToolDescriptor("double", toolDescription = "double"),
             expectedType = ToolParameterType.Float
         )
     }
@@ -105,13 +108,16 @@ class SerialToToolDescriptionTest {
     @Test
     fun list_and_nested_list_mappings() {
         // List<Int>
-        val listOfInt = ListSerializer(Int.serializer()).descriptor.asToolDescriptor("ints")
+        val listOfInt = ListSerializer(Int.serializer()).descriptor.asToolDescriptor("ints", toolDescription = "ints")
         val listType = listOfInt.requiredParameters.single().type
         assertIs<ToolParameterType.List>(listType)
         assertEquals(ToolParameterType.Integer, (listType as ToolParameterType.List).itemsType)
 
         // List<List<String>>
-        val nested = ListSerializer(ListSerializer(String.serializer())).descriptor.asToolDescriptor("nested")
+        val nested = ListSerializer(ListSerializer(String.serializer())).descriptor.asToolDescriptor(
+            "nested",
+            toolDescription = "nested"
+        )
         val nestedType = nested.requiredParameters.single().type
         val outer = assertIs<ToolParameterType.List>(nestedType)
         val inner = assertIs<ToolParameterType.List>(outer.itemsType)
@@ -160,15 +166,17 @@ class SerialToToolDescriptionTest {
         // Object
         val objectDesc = Singleton.serializer().descriptor.asToolDescriptor("singleton")
         assertEquals("singleton", objectDesc.name)
-        // description is empty since Singleton has no LLMDescription
-        assertEquals("", objectDesc.description)
+        assertEquals("Singleton", objectDesc.description)
         assertTrue(objectDesc.requiredParameters.isEmpty())
         assertTrue(objectDesc.optionalParameters.isEmpty())
 
         // Map
-        val mapDesc = MapSerializer(String.serializer(), Int.serializer()).descriptor.asToolDescriptor("map")
+        val mapDesc = MapSerializer(String.serializer(), Int.serializer()).descriptor.asToolDescriptor(
+            "map",
+            toolDescription = "map"
+        )
         assertEquals("map", mapDesc.name)
-        assertEquals("", mapDesc.description)
+        assertEquals("map", mapDesc.description)
         assertTrue(mapDesc.requiredParameters.isEmpty())
         assertTrue(mapDesc.optionalParameters.isEmpty())
     }

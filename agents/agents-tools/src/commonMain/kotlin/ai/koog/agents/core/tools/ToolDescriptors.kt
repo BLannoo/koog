@@ -8,17 +8,23 @@ import kotlin.enums.EnumEntries
  *
  * This class is annotated with @Serializable to support serialization/deserialization using kotlinx.serialization.
  *
- * @property name The name of the tool.
- * @property description The description of the tool.
+ * @property name The name of the tool. Must not be blank.
+ * @property description The description of the tool. Must not be blank.
  * @property requiredParameters A list of ToolParameterDescriptor representing the required parameters for the tool.
  * @property optionalParameters A list of ToolParameterDescriptor representing the optional parameters for the tool.
+ * @throws IllegalArgumentException if [name] or [description] is blank.
  */
 public data class ToolDescriptor(
     val name: String,
     val description: String,
     val requiredParameters: List<ToolParameterDescriptor> = emptyList(),
     val optionalParameters: List<ToolParameterDescriptor> = emptyList(),
-)
+) {
+    init {
+        require(name.isNotBlank()) { "Tool name cannot be blank." }
+        require(description.isNotBlank()) { "Tool description cannot be blank." }
+    }
+}
 
 /**
  * Represents a descriptor for a tool parameter.

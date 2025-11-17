@@ -183,6 +183,7 @@ class FunctionalAIAgentTest {
     )
 
     @Serializable
+    @LLMDescription("Architecture")
     data class Architecture(
         val name: String,
         val schema: SchemaDescriptor,
@@ -196,6 +197,7 @@ class FunctionalAIAgentTest {
     enum class ComponentStatus { DESIGNED, BUILT, TESTED, QUALIFIED }
 
     @Serializable
+    @LLMDescription("Engine")
     data class Engine(
         val name: String,
         val model: String = "X-1",
@@ -208,6 +210,7 @@ class FunctionalAIAgentTest {
     )
 
     @Serializable
+    @LLMDescription("Body")
     data class Body(
         val name: String,
         val hullMaterial: Material = Material.ALUMINUM_LITHIUM,
@@ -237,6 +240,7 @@ class FunctionalAIAgentTest {
     }
 
     @Serializable
+    @LLMDescription("Spacecraft")
     data class Spacecraft(
         val engine: Engine,
         val body: Body,
@@ -254,6 +258,7 @@ class FunctionalAIAgentTest {
     }
 
     @Serializable
+    @LLMDescription("FullQAReport")
     data class FullQAReport(
         @property:LLMDescription("The report for the engine component.")
         val engineReport: QAReport,
@@ -266,6 +271,7 @@ class FunctionalAIAgentTest {
     }
 
     @Serializable
+    @LLMDescription("SimpleOut")
     data class SimpleOut(val value: String)
 
     object QATools {
