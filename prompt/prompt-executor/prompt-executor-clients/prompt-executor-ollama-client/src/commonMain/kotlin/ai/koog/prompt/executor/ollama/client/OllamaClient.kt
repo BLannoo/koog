@@ -267,10 +267,10 @@ public class OllamaClient(
             OllamaChatRequestDTO(
                 model = model.id,
                 messages = prompt.toOllamaChatMessages(model),
+                tools = ollamaTools,
                 options = extractOllamaOptions(prompt, model),
                 stream = true,
-                additionalProperties = prompt.params.additionalProperties,
-                tools = ollamaTools
+                additionalProperties = prompt.params.additionalProperties
             )
         )
 
