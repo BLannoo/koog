@@ -168,27 +168,13 @@ public class OllamaClient(
     ): List<Message.Response> {
         require(model.provider == LLMProvider.Ollama) { "Model not supported by Ollama" }
 
-        val ollamaTools = if (tools.isNotEmpty()) {
-            tools.map {
-                OllamaToolDTO(
-                    type = "function",
-                    function = Definition(
-                        name = it.name,
-                        description = it.description,
-                        parameters = toolDescriptorConverter.generate(it)
-                    )
-                )
-            }
-        } else {
-            null
-        }
-
+        val llmTools = tools.takeIf { it.isNotEmpty() }?.map { it.toOllamaChatTool() }
         val request = ollamaJson.encodeToString(
             OllamaChatRequestDTOSerializer,
             OllamaChatRequestDTO(
                 model = model.id,
                 messages = prompt.toOllamaChatMessages(model),
-                tools = ollamaTools,
+                tools = llmTools,
                 format = prompt.extractOllamaJsonFormat(),
                 options = extractOllamaOptions(prompt, model),
                 stream = false,
@@ -275,6 +261,7 @@ public class OllamaClient(
     ): Flow<StreamFrame> = streamFrameFlow {
         require(model.provider == LLMProvider.Ollama) { "Model not supported by Ollama" }
 
+        val llmTools = tools.takeIf { it.isNotEmpty() }?.map { it.toOllamaChatTool() }
         val request = ollamaJson.encodeToString(
             OllamaChatRequestDTOSerializer,
             OllamaChatRequestDTO(
@@ -283,6 +270,7 @@ public class OllamaClient(
                 options = extractOllamaOptions(prompt, model),
                 stream = true,
                 additionalProperties = prompt.params.additionalProperties,
+                tools = llmTools
             )
         )
 
@@ -324,6 +312,15 @@ public class OllamaClient(
             numCtx = contextWindowStrategy.computeContextLength(prompt, model),
         )
     }
+
+    private fun ToolDescriptor.toOllamaChatTool(): OllamaToolDTO = OllamaToolDTO(
+        type = "function",
+        function = Definition(
+            name = name,
+            description = description,
+            parameters = toolDescriptorConverter.generate(this)
+        )
+    )
 
     /**
      * Embeds the given text using the Ollama model.
