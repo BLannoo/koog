@@ -168,13 +168,13 @@ public class OllamaClient(
     ): List<Message.Response> {
         require(model.provider == LLMProvider.Ollama) { "Model not supported by Ollama" }
 
-        val llmTools = tools.takeIf { it.isNotEmpty() }?.map { it.toOllamaChatTool() }
+        val ollamaTools = tools.takeIf { it.isNotEmpty() }?.map { it.toOllamaChatTool() }
         val request = ollamaJson.encodeToString(
             OllamaChatRequestDTOSerializer,
             OllamaChatRequestDTO(
                 model = model.id,
                 messages = prompt.toOllamaChatMessages(model),
-                tools = llmTools,
+                tools = ollamaTools,
                 format = prompt.extractOllamaJsonFormat(),
                 options = extractOllamaOptions(prompt, model),
                 stream = false,
@@ -261,7 +261,7 @@ public class OllamaClient(
     ): Flow<StreamFrame> = streamFrameFlow {
         require(model.provider == LLMProvider.Ollama) { "Model not supported by Ollama" }
 
-        val llmTools = tools.takeIf { it.isNotEmpty() }?.map { it.toOllamaChatTool() }
+        val ollamaTools = tools.takeIf { it.isNotEmpty() }?.map { it.toOllamaChatTool() }
         val request = ollamaJson.encodeToString(
             OllamaChatRequestDTOSerializer,
             OllamaChatRequestDTO(
@@ -270,7 +270,7 @@ public class OllamaClient(
                 options = extractOllamaOptions(prompt, model),
                 stream = true,
                 additionalProperties = prompt.params.additionalProperties,
-                tools = llmTools
+                tools = ollamaTools
             )
         )
 
