@@ -9,6 +9,7 @@ import ai.koog.prompt.executor.clients.ConnectionTimeoutConfig
 import ai.koog.prompt.executor.clients.LLMClient
 import ai.koog.prompt.executor.clients.LLMClientException
 import ai.koog.prompt.executor.clients.LLMEmbeddingProvider
+import ai.koog.prompt.executor.clients.modelsById
 import ai.koog.prompt.executor.clients.openai.base.AbstractOpenAILLMClient
 import ai.koog.prompt.executor.clients.openai.base.OpenAIBaseSettings
 import ai.koog.prompt.executor.clients.openai.base.OpenAICompatibleToolDescriptorSchemaGenerator
@@ -196,7 +197,7 @@ public open class OpenAILLMClient @JvmOverloads constructor(
         stream: Boolean
     ): String {
         val responseFormat = params.schema?.let { schema ->
-            require(schema.capability in model.capabilities) {
+            require(model.supports(schema.capability)) {
                 "Model ${model.id} does not support structured output schema ${schema.name}"
             }
             when (schema) {
@@ -541,25 +542,17 @@ public open class OpenAILLMClient @JvmOverloads constructor(
      *
      * @return A list of model identifiers available from OpenAI.
      */
-    override suspend fun models(): List<String> {
+    override suspend fun models(): List<LLModel> {
         logger.debug { "Fetching available models from OpenAI" }
 
-        val openAIResponse = try {
-            httpClient.get(
-                path = settings.modelsPath,
-                responseType = OpenAIModelsResponse::class
-            )
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            throw LLMClientException(
-                clientName = clientName,
-                message = e.message,
-                cause = e
-            )
-        }
+        val models = httpClient.get(
+            path = settings.modelsPath,
+            responseType = OpenAIModelsResponse::class
+        )
 
-        return openAIResponse.data.map { it.id }
+        val modelsById = OpenAIModels.modelsById()
+
+        return models.data.map { modelsById[it.id] ?: LLModel(provider = llmProvider(), id = it.id) }
     }
 
     private fun convertModerationResult(result: OpenAIModerationResult): ModerationResult {
@@ -797,7 +790,10 @@ public open class OpenAILLMClient @JvmOverloads constructor(
                         add(InputContent.File(fileData = fileData, fileUrl = fileUrl, filename = part.fileName))
                     }
 
-                    else -> throw LLMClientException(clientName, "Unsupported attachment type: $part, for model: $model with Responses API")
+                    else -> throw LLMClientException(
+                        clientName,
+                        "Unsupported attachment type: $part, for model: $model with Responses API"
+                    )
                 }
             }
         }
@@ -839,7 +835,10 @@ public open class OpenAILLMClient @JvmOverloads constructor(
                         metaInfo = metaInfo
                     )
 
-                    else -> throw LLMClientException(clientName, "Unexpected response from $clientName: no tool calls and no content")
+                    else -> throw LLMClientException(
+                        clientName,
+                        "Unexpected response from $clientName: no tool calls and no content"
+                    )
                 }
             }
     }
