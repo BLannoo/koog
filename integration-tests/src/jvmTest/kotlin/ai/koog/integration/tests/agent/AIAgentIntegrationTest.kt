@@ -4,6 +4,7 @@ import ai.koog.agents.core.agent.AIAgent
 import ai.koog.agents.core.agent.ToolCalls
 import ai.koog.agents.core.agent.config.AIAgentConfig
 import ai.koog.agents.core.agent.execution.path
+import ai.koog.agents.core.agent.functionalStrategy
 import ai.koog.agents.core.agent.singleRunStrategy
 import ai.koog.agents.core.dsl.builder.ParallelNodeExecutionResult
 import ai.koog.agents.core.dsl.builder.forwardTo
@@ -69,6 +70,7 @@ import java.util.Base64
 import java.util.stream.Stream
 import kotlin.io.path.readBytes
 import kotlin.reflect.typeOf
+import kotlin.test.Test
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
@@ -1302,5 +1304,67 @@ class AIAgentIntegrationTest : AIAgentTestBase() {
                 )
             }
         }
+    }
+
+    @ParameterizedTest
+    @MethodSource("getLatestModels")
+    fun integration_FunctionalSubtask(model: LLModel) = runTest(timeout = 180.seconds) {
+        Models.assumeAvailable(model.provider)
+
+        val agent = AIAgent(
+            promptExecutor = getExecutor(model),
+            strategy = functionalStrategy<String, String> { input ->
+                val result: String = subtask(
+                    taskDescription = "Judge this: $input",
+                    input = input,
+                    runMode = ToolCalls.SEQUENTIAL
+                )
+                "Subtask completed: $result"
+            },
+            agentConfig = AIAgentConfig(
+                prompt = prompt(
+                    "history-compression-with-tools-test",
+                    params = LLMParams(toolChoice = ToolChoice.Required)
+                ) {
+                    system("You are a coordinator that delegates calculations.")
+                    user(
+                        "Calculate the sum of 10 and 20 using the add tool"
+                    )
+                },
+                model = model,
+                maxAgentIterations = 10
+            ),
+            toolRegistry = ToolRegistry { tool(SimpleCalculatorTool) },
+        )
+
+        val result = agent.run("Perform calculation")
+        result.shouldNotBeNull {
+            shouldContain("Subtask completed: ")
+            shouldContain("30")
+        }
+    }
+
+    @Disabled("KG-694")
+    @Test
+    fun integration_ThrowError() = runTest(timeout = 15.seconds) {
+        val model = OpenAIModels.Chat.GPT5_1
+
+        val agent = AIAgent.builder()
+            .promptExecutor(getExecutor(model))
+            .llmModel(model)
+            .functionalStrategy<String, String> { _, _ ->
+                throw RuntimeException("Intentional error from functional strategy")
+            }
+            .build()
+
+        val exception = try {
+            agent.run("Test")
+            null
+        } catch (e: Exception) {
+            e
+        }
+
+        exception.shouldNotBeNull()
+        exception.message shouldBe "Intentional error from functional strategy"
     }
 }
