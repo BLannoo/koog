@@ -114,6 +114,14 @@ object Models {
     }
 
     @JvmStatic
+    fun openAIReasoningModels(): Stream<LLModel> {
+        return Stream.of(
+            OpenAIModels.Chat.GPT5_1Codex,
+            OpenAIModels.Chat.GPT5_2,
+        )
+    }
+
+    @JvmStatic
     fun modelsWithVisionCapability(): Stream<Arguments> {
         return Stream.concat(
             openAIModels()
