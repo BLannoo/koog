@@ -1,6 +1,5 @@
 package ai.koog.agents.chatMemory.feature
 
-import ai.koog.agents.core.agent.GraphAIAgent.FeatureContext
 import ai.koog.agents.core.agent.entity.AIAgentStorageKey
 import ai.koog.agents.core.feature.AIAgentFunctionalFeature
 import ai.koog.agents.core.feature.AIAgentGraphFeature
@@ -101,16 +100,5 @@ public class ChatMemory {
                 config.chatHistoryProvider.store(it.context.runId, processed)
             }
         }
-    }
-}
-
-/**
- * Installs the [ChatMemory] feature and configures conversation history storage for an agent.
- *
- * @param configure A lambda with a receiver that configures the [ChatMemoryConfig].
- */
-public fun FeatureContext.installChatMemory(configure: ChatMemoryConfig.() -> Unit = {}) {
-    install(ChatMemory) {
-        configure()
     }
 }
