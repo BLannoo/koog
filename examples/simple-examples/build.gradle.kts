@@ -22,6 +22,8 @@ dependencies {
     //noinspection UseTomlInstead
     implementation("ai.koog:agents-features-sql")
     //noinspection UseTomlInstead
+    implementation("ai.koog:agents-features-chat-memory-sql")
+    //noinspection UseTomlInstead
     implementation("ai.koog:agents-features-a2a-server")
     //noinspection UseTomlInstead
     implementation("ai.koog:agents-features-a2a-client")
@@ -46,6 +48,8 @@ dependencies {
     implementation(libs.ktor.client.cio)
     implementation(libs.ktor.server.cio)
     implementation(libs.ktor.server.sse)
+
+    runtimeOnly(libs.postgresql)
 
     testImplementation(kotlin("test"))
     testImplementation(libs.kotlinx.coroutines.test)
@@ -128,6 +132,7 @@ registerRunExampleTask("runExampleStreamingKtorServer", "ai.koog.agents.example.
 registerRunExampleTask("runExampleGOAPGrouper", "ai.koog.agents.example.goap.GrouperAgentKt")
 registerRunExampleTask("runExampleChatMemory", "ai.koog.agents.example.chatmemory.ChatMemoryExampleKt")
 registerRunExampleTask("runExampleChatMemoryWindowed", "ai.koog.agents.example.chatmemory.ChatMemoryWindowedExampleKt")
+registerRunExampleTask("runExampleChatMemoryPostgres", "ai.koog.agents.example.chatmemory.ChatMemoryPostgresExampleKt")
 /*
  A2A examples
 */
