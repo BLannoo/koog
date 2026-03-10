@@ -26,7 +26,6 @@ import ai.koog.prompt.structure.StructuredRequestConfig
 import ai.koog.prompt.structure.StructuredResponse
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.KSerializer
-import kotlin.jvm.JvmName
 import kotlin.reflect.KClass
 import kotlin.time.Clock
 
@@ -61,22 +60,14 @@ public expect class AIAgentLLMWriteSession internal constructor(
     @PublishedApi
     internal val delegate: AIAgentLLMWriteSessionImpl
 
-    @get:JvmName("environment")
-    public override val environment: AIAgentEnvironment
-
-    @get:JvmName("toolRegistry")
-    public override val toolRegistry: ToolRegistry
-
-    @get:JvmName("clock")
-    public override val clock: Clock
-
+    override val environment: AIAgentEnvironment
+    override val toolRegistry: ToolRegistry
+    override val clock: Clock
     override var prompt: Prompt
-
     override var tools: List<ToolDescriptor>
-
     override var model: LLModel
-
     override var responseProcessor: ResponseProcessor?
+    override val config: AIAgentConfig
 
     public override fun <TArgs, TResult> findTool(tool: Tool<TArgs, TResult>): SafeTool<TArgs, TResult>
 
@@ -233,7 +224,7 @@ public suspend inline fun <reified TArgs, reified TResult> AIAgentLLMWriteSessio
     tool: Tool<TArgs, TResult>,
     args: TArgs
 ): SafeTool.Result<TResult> {
-    return findTool(tool::class).execute(args)
+    return findTool(tool::class).execute(args, config.serializer)
 }
 
 /**
@@ -247,7 +238,7 @@ public suspend inline fun <reified TArgs> AIAgentLLMWriteSession.callTool(
     toolName: String,
     args: TArgs
 ): SafeTool.Result<out Any?> {
-    return findToolByName<TArgs>(toolName).execute(args)
+    return findToolByName<TArgs>(toolName).execute(args, config.serializer)
 }
 
 /**
@@ -261,7 +252,7 @@ public suspend inline fun <reified TArgs> AIAgentLLMWriteSession.callToolRaw(
     toolName: String,
     args: TArgs
 ): String {
-    return findToolByName<TArgs>(toolName).executeRaw(args)
+    return findToolByName<TArgs>(toolName).execute(args, config.serializer).content
 }
 
 /**
@@ -278,7 +269,7 @@ public suspend inline fun <reified TArgs, reified TResult> AIAgentLLMWriteSessio
     args: TArgs
 ): SafeTool.Result<TResult> {
     val tool = findTool(toolClass)
-    return tool.execute(args)
+    return tool.execute(args, config.serializer)
 }
 
 /**
@@ -291,7 +282,7 @@ public suspend inline fun <reified ToolT : Tool<Any?, Any?>> AIAgentLLMWriteSess
     args: Any?
 ): SafeTool.Result<out Any?> {
     val tool = findTool(ToolT::class)
-    return tool.executeUnsafe(args)
+    return tool.executeUnsafe(args, config.serializer)
 }
 
 /**
