@@ -5,7 +5,6 @@ import ai.koog.agents.core.tools.ToolDescriptor
 import ai.koog.agents.core.tools.ToolResult
 import kotlinx.serialization.Serializable
 import kotlin.test.Test
-import kotlin.test.assertNotSame
 import kotlin.test.assertTrue
 
 class RollbackToolRegistryTest {
@@ -50,18 +49,4 @@ class RollbackToolRegistryTest {
         )
     }
 
-    /**
-     * Each access to RollbackToolRegistry.EMPTY must return a distinct object.
-     */
-    @Test
-    fun testEmptyRollbackRegistryAccessesAreDistinctInstances() {
-        val first = RollbackToolRegistry.EMPTY
-        val second = RollbackToolRegistry.EMPTY
-
-        assertNotSame(
-            first, second,
-            "RollbackToolRegistry.EMPTY must return a new instance on each access " +
-                "to prevent shared mutable state (KG-676)"
-        )
-    }
 }

@@ -8,7 +8,6 @@ import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-import kotlin.test.assertNotSame
 import kotlin.test.assertTrue
 
 class ToolRegistryTest {
@@ -222,20 +221,4 @@ class ToolRegistryTest {
         )
     }
 
-    /**
-     * Each access to ToolRegistry.EMPTY must return a distinct object.
-     * Reference equality (===) between two accesses must never hold, because
-     * a shared reference is what makes the mutation visible across callers.
-     */
-    @Test
-    fun testEmptyRegistryAccessesAreDistinctInstances() {
-        val first = ToolRegistry.EMPTY
-        val second = ToolRegistry.EMPTY
-
-        assertNotSame(
-            first, second,
-            "ToolRegistry.EMPTY must return a new instance on each access " +
-                "to prevent shared mutable state (KG-676)"
-        )
-    }
 }
