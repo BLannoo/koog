@@ -89,11 +89,11 @@ public class RollbackToolRegistry internal constructor(rollbackToolsMap: Map<Too
             RollbackToolRegistryBuilder().apply(init).build()
 
         /**
-         * Represents an empty instance of the [RollbackToolRegistry].
+         * Returns a new empty [RollbackToolRegistry] with no registered tools.
          *
-         * This constant provides a default, immutable `RollbackToolRegistry` with no registered tools.
-         * It can be used as a placeholder or a base instance when no rollback tools are required.
+         * A fresh instance is returned on every access so that callers cannot accidentally
+         * corrupt a shared singleton by calling [add] on the returned value.
          */
-        public val EMPTY: RollbackToolRegistry = RollbackToolRegistry(emptyMap())
+        public val EMPTY: RollbackToolRegistry get() = RollbackToolRegistry(emptyMap())
     }
 }
