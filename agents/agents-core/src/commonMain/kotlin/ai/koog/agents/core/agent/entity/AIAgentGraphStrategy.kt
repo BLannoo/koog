@@ -9,7 +9,6 @@ import ai.koog.agents.core.agent.execution.DEFAULT_AGENT_PATH_SEPARATOR
 import ai.koog.agents.core.annotation.InternalAgentsApi
 import ai.koog.serialization.JSONElement
 import ai.koog.serialization.kotlinx.toKoogJSONElement
-import ai.koog.serialization.typeToken
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
@@ -160,7 +159,7 @@ public class AIAgentGraphStrategy<TInput, TOutput>(
         val completedNode = metadata.nodesMap[actualPath] ?: throw IllegalStateException("Node $actualPath not found")
 
         val actualInput = agentContext.config.serializer
-            .decodeFromJSONElement<Any?>(input, typeToken(completedNode.inputType))
+            .decodeFromJSONElement<Any?>(input, completedNode.inputType)
 
         // Note: completed node will be re-executed because the output wasn't saved in checkpoints
         // (this was the original behavior before 0.6.1)
@@ -199,7 +198,7 @@ public class AIAgentGraphStrategy<TInput, TOutput>(
         val completedNode = metadata.nodesMap[actualPath] ?: throw IllegalStateException("Node $actualPath not found")
 
         val actualOutput = agentContext.config.serializer
-            .decodeFromJSONElement<Any?>(output, typeToken(completedNode.outputType))
+            .decodeFromJSONElement<Any?>(output, completedNode.outputType)
 
         if (completedNode is FinishNode<*>) {
             // finish node (of some subgraph) doesn't have next edges, and it's input equals output, so it's safe to re-start it:

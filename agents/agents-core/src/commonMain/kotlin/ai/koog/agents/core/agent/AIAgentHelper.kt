@@ -11,8 +11,8 @@ import ai.koog.prompt.executor.model.PromptExecutor
 import ai.koog.prompt.llm.LLModel
 import ai.koog.prompt.params.LLMParams
 import ai.koog.prompt.processor.ResponseProcessor
+import ai.koog.serialization.typeToken
 import kotlin.jvm.JvmStatic
-import kotlin.reflect.typeOf
 import kotlin.time.Clock
 import kotlin.uuid.ExperimentalUuidApi
 
@@ -25,7 +25,7 @@ internal object AIAgentHelper {
      * @return An instance of `Builder` for configuring an AI agent.
      */
     @JvmStatic
-    public fun builder(): AIAgentBuilder = AIAgentBuilder()
+    fun builder(): AIAgentBuilder = AIAgentBuilder()
 
     /**
      * Creates an instance of an AI agent based on the provided configuration, input/output types,
@@ -54,8 +54,8 @@ internal object AIAgentHelper {
         noinline installFeatures: FeatureContext.() -> Unit = {},
     ): AIAgent<Input, Output> {
         return GraphAIAgent(
-            inputType = typeOf<Input>(),
-            outputType = typeOf<Output>(),
+            inputType = typeToken<Input>(),
+            outputType = typeToken<Output>(),
             promptExecutor = promptExecutor,
             agentConfig = agentConfig,
             toolRegistry = toolRegistry,
@@ -87,8 +87,8 @@ internal object AIAgentHelper {
         id: String? = null,
         installFeatures: FeatureContext.() -> Unit = {},
     ): GraphAIAgent<String, String> = GraphAIAgent(
-        inputType = typeOf<String>(),
-        outputType = typeOf<String>(),
+        inputType = typeToken<String>(),
+        outputType = typeToken<String>(),
         promptExecutor = promptExecutor,
         agentConfig = agentConfig,
         toolRegistry = toolRegistry,
