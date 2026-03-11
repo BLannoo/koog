@@ -60,10 +60,13 @@ public class RollbackToolRegistry internal constructor(rollbackToolsMap: Map<Too
      * Adds a tool and its corresponding rollback tool to the registry.
      * If the tool is already present in the registry, the method does nothing.
      *
+     * Internal: prefer the [RollbackToolRegistryBuilder] DSL or the [plus] operator.
+     * Mutation after construction is only intended for module-internal setup code.
+     *
      * @param tool the tool to add to the registry
      * @param rollbackTool the rollback tool associated with the specified tool
      */
-    public fun <TArgs> add(tool: Tool<TArgs, *>, rollbackTool: Tool<TArgs, *>) {
+    internal fun <TArgs> add(tool: Tool<TArgs, *>, rollbackTool: Tool<TArgs, *>) {
         if (_rollbackToolsMap.contains(tool)) return
         _rollbackToolsMap[tool] = rollbackTool
     }
@@ -89,11 +92,12 @@ public class RollbackToolRegistry internal constructor(rollbackToolsMap: Map<Too
             RollbackToolRegistryBuilder().apply(init).build()
 
         /**
-         * Represents an empty instance of the [RollbackToolRegistry].
+         * Returns a new empty [RollbackToolRegistry] with no registered tools.
          *
-         * This constant provides a default, immutable `RollbackToolRegistry` with no registered tools.
-         * It can be used as a placeholder or a base instance when no rollback tools are required.
+         * A new instance is returned on each access. Because [RollbackToolRegistry] holds mutable
+         * internal state, a stored singleton would allow module-internal code that calls [add] to
+         * corrupt the shared object, making subsequent accesses to [EMPTY] non-empty.
          */
-        public val EMPTY: RollbackToolRegistry = RollbackToolRegistry(emptyMap())
+        public val EMPTY: RollbackToolRegistry get() = RollbackToolRegistry(emptyMap())
     }
 }

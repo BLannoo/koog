@@ -8,6 +8,7 @@ import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNotSame
 import kotlin.test.assertTrue
 
 class ToolRegistryTest {
@@ -168,31 +169,73 @@ class ToolRegistryTest {
 
     @Test
     fun testToolRegistryAddAllPartiallyExistingTool() = runTest {
-        @Test
-        fun testToolRegistryAddAllExistingTool() = runTest {
-            val toolRegistry = ToolRegistry {
-                tools(listOf(tool1, tool2))
-            }
-            assertEquals(2, toolRegistry.tools.size)
-
-            toolRegistry.addAll(tool2, tool3)
-
-            val expectedTools = listOf(tool1, tool2, tool3)
-            assertEquals(expectedTools.size, toolRegistry.tools.size)
-            assertContentEquals(expectedTools, toolRegistry.tools)
+        val toolRegistry = ToolRegistry {
+            tools(listOf(tool1, tool2))
         }
+        assertEquals(2, toolRegistry.tools.size)
+
+        toolRegistry.addAll(tool2, tool3)
+
+        val expectedTools = listOf(tool1, tool2, tool3)
+        assertEquals(expectedTools.size, toolRegistry.tools.size)
+        assertContentEquals(expectedTools, toolRegistry.tools)
     }
 
     @Test
     fun testToolRegistryAddAllEmptyList() = runTest {
-        @Test
-        fun testToolRegistryAddAllExistingTool() = runTest {
-            val toolRegistry = ToolRegistry { }
-            assertEquals(0, toolRegistry.tools.size)
+        val toolRegistry = ToolRegistry { }
+        assertEquals(0, toolRegistry.tools.size)
 
-            toolRegistry.addAll()
+        toolRegistry.addAll()
 
-            assertTrue(toolRegistry.tools.isEmpty())
-        }
+        assertTrue(toolRegistry.tools.isEmpty())
+    }
+
+    // ── KG-676 regression tests ───────────────────────────────────────────────
+    //
+    // The bug: ToolRegistry.EMPTY was a stored singleton. Any code that obtained a
+    // reference to it and called add() would corrupt the shared object, so the next
+    // caller using ToolRegistry.EMPTY would see a non-empty "empty" registry.
+    //
+    // These tests model that scenario directly: they would FAIL on the old code
+    // (singleton) and PASS on the fix (computed property returning a new instance).
+
+    /**
+     * Two independent callers both obtain ToolRegistry.EMPTY.
+     * One of them adds a tool (the anti-pattern KG-676 was about).
+     * The other caller must still see an empty registry.
+     *
+     * With the old singleton code the second caller would have inherited tool1,
+     * corrupting any agent configured with the "empty" default.
+     */
+    @Test
+    fun testEmptyRegistryNotSharedBetweenCallers() {
+        val callerA = ToolRegistry.EMPTY   // e.g. first agent using the default
+        val callerB = ToolRegistry.EMPTY   // e.g. second agent using the default
+
+        callerA.add(tool1)  // callerA adds a tool — the mutation that triggers the bug
+
+        assertTrue(
+            callerB.tools.isEmpty(),
+            "ToolRegistry.EMPTY must not be a shared mutable singleton: " +
+                "callerA.add() corrupted callerB's registry"
+        )
+    }
+
+    /**
+     * Each access to ToolRegistry.EMPTY must return a distinct object.
+     * Reference equality (===) between two accesses must never hold, because
+     * a shared reference is what makes the mutation visible across callers.
+     */
+    @Test
+    fun testEmptyRegistryAccessesAreDistinctInstances() {
+        val first = ToolRegistry.EMPTY
+        val second = ToolRegistry.EMPTY
+
+        assertNotSame(
+            first, second,
+            "ToolRegistry.EMPTY must return a new instance on each access " +
+                "to prevent shared mutable state (KG-676)"
+        )
     }
 }

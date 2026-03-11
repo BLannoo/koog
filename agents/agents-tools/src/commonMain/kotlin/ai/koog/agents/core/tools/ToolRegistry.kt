@@ -102,9 +102,12 @@ public class ToolRegistry private constructor(tools: List<Tool<*, *>> = emptyLis
     /**
      * Adds a tool to the registry if it is not already present.
      *
+     * Internal: prefer the [Builder] DSL or the [plus] operator to compose registries.
+     * Mutation after construction is only intended for module-internal setup code.
+     *
      * @param tool The tool to be added to the registry.
      */
-    public fun add(tool: Tool<*, *>) {
+    internal fun add(tool: Tool<*, *>) {
         if (_tools.contains(tool)) return
         _tools.add(tool)
     }
@@ -112,11 +115,12 @@ public class ToolRegistry private constructor(tools: List<Tool<*, *>> = emptyLis
     /**
      * Adds multiple tools to the registry.
      *
-     * This method accepts a variable number of tools and adds each of them to the registry.
+     * Internal: prefer the [Builder] DSL or the [plus] operator to compose registries.
+     * Mutation after construction is only intended for module-internal setup code.
      *
      * @param tools The tools to be added to the registry.
      */
-    public fun addAll(vararg tools: Tool<*, *>) {
+    internal fun addAll(vararg tools: Tool<*, *>) {
         tools.forEach { tool -> add(tool) }
     }
 
@@ -185,9 +189,12 @@ public class ToolRegistry private constructor(tools: List<Tool<*, *>> = emptyLis
         public operator fun invoke(init: Builder.() -> Unit): ToolRegistry = Builder().apply(init).build()
 
         /**
-         * A constant representing an empty registry with no tools.
-         * TODO(KG-676): ToolRegistry is mutable but stored as an immutable object.
+         * Returns a new empty registry with no tools.
+         *
+         * A new instance is returned on each access. Because [ToolRegistry] holds mutable internal
+         * state, a stored singleton would allow module-internal code that calls [add]/[addAll] to
+         * corrupt the shared object, making subsequent accesses to [EMPTY] non-empty.
          */
-        public val EMPTY: ToolRegistry = ToolRegistry(emptyList())
+        public val EMPTY: ToolRegistry get() = ToolRegistry(emptyList())
     }
 }
