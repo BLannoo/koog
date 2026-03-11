@@ -185,9 +185,12 @@ public class ToolRegistry private constructor(tools: List<Tool<*, *>> = emptyLis
         public operator fun invoke(init: Builder.() -> Unit): ToolRegistry = Builder().apply(init).build()
 
         /**
-         * A constant representing an empty registry with no tools.
-         * TODO(KG-676): ToolRegistry is mutable but stored as an immutable object.
+         * Returns a new empty registry with no tools.
+         *
+         * A new instance is returned on each access to prevent shared mutable state:
+         * since [ToolRegistry] is mutable (via [add]/[addAll]), a singleton would allow callers
+         * to inadvertently corrupt the shared object, affecting all other users of [EMPTY].
          */
-        public val EMPTY: ToolRegistry = ToolRegistry(emptyList())
+        public val EMPTY: ToolRegistry get() = ToolRegistry(emptyList())
     }
 }

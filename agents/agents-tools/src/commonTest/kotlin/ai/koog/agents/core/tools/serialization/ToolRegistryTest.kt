@@ -107,6 +107,24 @@ class ToolRegistryTest {
         assertTrue(combinedRegistry.tools.contains(tool2))
     }
 
+    /**
+     * Regression test for KG-676: ToolRegistry.EMPTY must not be a shared mutable singleton.
+     * Adding a tool to one reference of EMPTY must not affect subsequent accesses to EMPTY.
+     */
+    @Test
+    fun testEmptyRegistryIsolatedFromMutation() {
+        val emptyBefore = ToolRegistry.EMPTY
+        assertTrue(emptyBefore.tools.isEmpty())
+
+        // Mutate a reference obtained from EMPTY
+        emptyBefore.add(tool1)
+        assertEquals(1, emptyBefore.tools.size)
+
+        // A fresh access to EMPTY must still return an empty registry
+        val emptyAfter = ToolRegistry.EMPTY
+        assertTrue(emptyAfter.tools.isEmpty(), "ToolRegistry.EMPTY was polluted by mutation of a previous reference")
+    }
+
     @Test
     fun testGetToolByArgs() = runTest {
         val tool = sampleRegistry.getTool(tool1.name) as SampleTool
