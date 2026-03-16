@@ -12,6 +12,7 @@ import ai.koog.prompt.executor.clients.anthropic.models.AnthropicToolChoice
 import ai.koog.prompt.executor.clients.anthropic.models.AnthropicToolConfiguration
 import ai.koog.prompt.executor.clients.anthropic.models.AnthropicToolSchema
 import ai.koog.prompt.executor.clients.anthropic.models.SystemAnthropicMessage
+import ai.koog.prompt.executor.clients.serialization.RemainSerialNameJsonNamingStrategyWrapper
 import ai.koog.test.utils.runWithBothJsonConfigurations
 import ai.koog.test.utils.verifyDeserialization
 import io.kotest.assertions.json.shouldEqualJson
@@ -19,6 +20,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.types.shouldBeTypeOf
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNamingStrategy
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
@@ -28,6 +30,15 @@ import kotlinx.serialization.json.jsonPrimitive
 import kotlin.test.Test
 
 class AnthropicSerializationTest {
+
+    private val snakeCaseJson = Json {
+        ignoreUnknownKeys = true
+        isLenient = true
+        encodeDefaults = true // Ensure default values are included in serialization
+        explicitNulls = false
+        namingStrategy = RemainSerialNameJsonNamingStrategyWrapper(JsonNamingStrategy.SnakeCase)
+    }
+
 
     @Test
     fun `test serialization without additionalProperties`() =

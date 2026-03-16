@@ -27,6 +27,7 @@ import ai.koog.prompt.executor.clients.anthropic.models.DocumentSource
 import ai.koog.prompt.executor.clients.anthropic.models.ImageSource
 import ai.koog.prompt.executor.clients.anthropic.models.SystemAnthropicMessage
 import ai.koog.prompt.executor.clients.modelsById
+import ai.koog.prompt.executor.clients.serialization.RemainSerialNameJsonNamingStrategyWrapper
 import ai.koog.prompt.llm.LLMCapability
 import ai.koog.prompt.llm.LLMProvider
 import ai.koog.prompt.llm.LLModel
@@ -108,7 +109,7 @@ public open class AnthropicLLMClient @JvmOverloads constructor(
         isLenient = true
         encodeDefaults = true // Ensure default values are included in serialization
         explicitNulls = false
-        namingStrategy = JsonNamingStrategy.SnakeCase
+        namingStrategy = RemainSerialNameJsonNamingStrategyWrapper(JsonNamingStrategy.SnakeCase)
     }
 
     // Configures HTTP client with timeouts, headers, and JSON handling

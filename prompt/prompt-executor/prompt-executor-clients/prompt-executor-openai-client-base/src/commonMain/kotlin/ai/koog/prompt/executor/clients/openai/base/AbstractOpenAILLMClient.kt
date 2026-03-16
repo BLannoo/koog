@@ -22,6 +22,7 @@ import ai.koog.prompt.executor.clients.openai.base.models.OpenAIToolFunction
 import ai.koog.prompt.executor.clients.openai.base.models.OpenAIUsage
 import ai.koog.prompt.executor.clients.openai.base.structure.OpenAIBasicJsonSchemaGenerator
 import ai.koog.prompt.executor.clients.openai.base.structure.OpenAIStandardJsonSchemaGenerator
+import ai.koog.prompt.executor.clients.serialization.RemainSerialNameJsonNamingStrategyWrapper
 import ai.koog.prompt.llm.LLMCapability
 import ai.koog.prompt.llm.LLModel
 import ai.koog.prompt.message.AttachmentContent
@@ -101,7 +102,7 @@ public abstract class AbstractOpenAILLMClient<TResponse : OpenAIBaseLLMResponse,
         isLenient = true
         encodeDefaults = true
         explicitNulls = false
-        namingStrategy = JsonNamingStrategy.SnakeCase
+        namingStrategy = RemainSerialNameJsonNamingStrategyWrapper(JsonNamingStrategy.SnakeCase)
     }
 
     protected val httpClient: KoogHttpClient = KoogHttpClient.fromKtorClient(
