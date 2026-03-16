@@ -171,21 +171,7 @@ public class OllamaClient @JvmOverloads constructor(
     ): List<Message.Response> {
         require(model.provider == LLMProvider.Ollama) { "Model not supported by Ollama" }
 
-        val ollamaTools = if (tools.isNotEmpty()) {
-            tools.map {
-                OllamaToolDTO(
-                    type = "function",
-                    function = Definition(
-                        name = it.name,
-                        description = it.description,
-                        parameters = toolDescriptorConverter.generate(it)
-                    )
-                )
-            }
-        } else {
-            null
-        }
-
+        val ollamaTools = tools.takeIf { it.isNotEmpty() }?.map { it.toOllamaChatTool() }
         val request = ollamaJson.encodeToString(
             OllamaChatRequestDTOSerializer,
             OllamaChatRequestDTO(
@@ -278,14 +264,16 @@ public class OllamaClient @JvmOverloads constructor(
     ): Flow<StreamFrame> = buildStreamFrameFlow {
         require(model.provider == LLMProvider.Ollama) { "Model not supported by Ollama" }
 
+        val ollamaTools = tools.takeIf { it.isNotEmpty() }?.map { it.toOllamaChatTool() }
         val request = ollamaJson.encodeToString(
             OllamaChatRequestDTOSerializer,
             OllamaChatRequestDTO(
                 model = model.id,
                 messages = prompt.toOllamaChatMessages(model),
+                tools = ollamaTools,
                 options = extractOllamaOptions(prompt, model),
                 stream = true,
-                additionalProperties = prompt.params.additionalProperties,
+                additionalProperties = prompt.params.additionalProperties
             )
         )
 
@@ -336,6 +324,15 @@ public class OllamaClient @JvmOverloads constructor(
             numCtx = contextWindowStrategy.computeContextLength(prompt, model),
         )
     }
+
+    private fun ToolDescriptor.toOllamaChatTool(): OllamaToolDTO = OllamaToolDTO(
+        type = "function",
+        function = Definition(
+            name = name,
+            description = description,
+            parameters = toolDescriptorConverter.generate(this)
+        )
+    )
 
     /**
      * Embeds the given text using the Ollama model.
