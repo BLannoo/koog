@@ -216,16 +216,13 @@ class TraceFeatureMessageTestWriterTest {
 
         val messageProcessor = TestFeatureMessageWriter()
 
-        val toolRegistry = ToolRegistry.EMPTY
         val agent = createAgent(
             strategy = strategy,
-            toolRegistry = toolRegistry
+            toolRegistry = ToolRegistry { tool(RecursiveTool()) }
         ) {
             install(Tracing) {
                 addMessageProcessor(messageProcessor)
             }
-        }.apply {
-            toolRegistry.add(RecursiveTool())
         }
 
         agent.run("", null)
@@ -255,16 +252,13 @@ class TraceFeatureMessageTestWriterTest {
 
         val messageProcessor = TestFeatureMessageWriter()
 
-        val toolRegistry = ToolRegistry.EMPTY
         val agent = createAgent(
             strategy = strategy,
-            toolRegistry = toolRegistry
+            toolRegistry = ToolRegistry { tool(dummyTool) }
         ) {
             install(Tracing) {
                 addMessageProcessor(messageProcessor)
             }
-        }.apply {
-            toolRegistry.add(dummyTool)
         }
 
         agent.run("", null)

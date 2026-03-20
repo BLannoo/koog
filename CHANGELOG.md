@@ -1,3 +1,12 @@
+# 0.7.0
+
+## Bug Fixes
+- **ToolRegistry / RollbackToolRegistry**: Fixed shared mutable singleton bug where `ToolRegistry.EMPTY` and `RollbackToolRegistry.EMPTY` were stored as singletons with mutable backing collections. Mutating a reference obtained from `EMPTY` would corrupt the shared object for all subsequent callers ([KG-676](https://youtrack.jetbrains.com/issue/KG-676))
+
+## Breaking Changes
+- **`ToolRegistry.add()` / `ToolRegistry.addAll()` removed from public API**: These methods are now `internal`. They were never intended for external use — all existing production callers were already using the `ToolRegistry { tool(...) }` builder DSL or the `+` operator. Migrate any direct calls to `add()`/`addAll()` to the builder: `ToolRegistry { tool(myTool) }`, or compose registries with `registry1 + registry2` ([KG-676](https://youtrack.jetbrains.com/issue/KG-676))
+- **`RollbackToolRegistry.add()` removed from public API**: Same reasoning. Use the `RollbackToolRegistry { registerRollback(tool, rollbackTool) }` builder instead ([KG-676](https://youtrack.jetbrains.com/issue/KG-676))
+
 # 0.6.4
 > Published 4 March 2026
 
