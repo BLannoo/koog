@@ -108,6 +108,17 @@ class ToolRegistryTest {
     }
 
     @Test
+    fun testEmptyRegistryIsNotMutatedAcrossAccesses() {
+        // Regression test for KG-676: ToolRegistry.EMPTY must return a fresh instance
+        // each time so that mutating one returned value does not corrupt subsequent accesses.
+        val first = ToolRegistry.EMPTY
+        first.add(tool1)
+
+        val second = ToolRegistry.EMPTY
+        assertTrue(second.tools.isEmpty(), "EMPTY must return an unpolluted registry after mutation of a previously returned instance")
+    }
+
+    @Test
     fun testGetToolByArgs() = runTest {
         val tool = sampleRegistry.getTool(tool1.name) as SampleTool
         assertTrue(tool in listOf(tool1, tool2))
