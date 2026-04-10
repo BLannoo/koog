@@ -18,11 +18,22 @@ A Spring Boot application that integrates Koog AI capabilities, providing a REST
 
 1. Set your OpenAI API key: `export OPENAI_API_KEY=your_key`
 2. Navigate to directory: `cd examples/spring-boot-java`
-3. Run: `mvn spring-boot:run`
+3. Run the application using Maven:
+    mvn spring-boot:run
+  This will start the SpringBoot server on https://localhost:8080
+
 
 Application starts on `http://localhost:8080`.
 
 ## API Usage
+
+## What this API does
+
+This API allows users to send a message to an AI model and receive a generated response. It acts as a simple chat interface powered by OpenAI.
+
+## What this API does?
+
+This API allows users to send a message to an API model and then receive a generated response. It acts as a simple chat interface powered by OpenAI
 
 ### Chat Endpoint
 
