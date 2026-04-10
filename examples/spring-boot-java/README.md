@@ -27,6 +27,10 @@ Application starts on `http://localhost:8080`.
 
 ## API Usage
 
+## What this API does
+
+This API allows users to send a message to an AI model and receive a generated response. It acts as a simple chat interface powered by OpenAI.
+
 ## What this API does?
 
 This API allows users to send a message to an API model and then receive a generated response. It acts as a simple chat interface powered by OpenAI
